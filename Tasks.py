@@ -110,13 +110,13 @@ def TanHnorm(x):
         norm_matrix_unit[i,1] = float(x[i,1]) / float(math.sqrt(x[i,0]**2 + x[i,1]**2))
     return torch.tensor(norm_matrix_unit).double()
 
-new_repr = TanHnorm(F1(x,W0,W1))
+#new_repr = TanHnorm(F1(x,W0,W1))
 
 #plt.scatter(new_repr[:,0],new_repr[:,1],c=y_numpy)
 #plt.show()
 
 def F2(x,W0,W1,W2):
-    return torch.mm(new_repr,W2)
+    return torch.mm(TanHnorm(F1(x,W0,W1)),W2)
 
 
 #print(Output.size())
@@ -142,13 +142,68 @@ def CrossEntropyLoss(Output,y_numpy):
 
     return Output,neg_log_likelihoods
 
-Output, neg_log_likelihoods = CrossEntropyLoss(F2(x,W0,W1,W2),y_numpy)
-predictions = np.argmax(Output,axis=1)
+#Output, Loss = CrossEntropyLoss(F2(x,W0,W1,W2),y_numpy)
+#predictions = np.argmax(Output,axis=1)
 #print(predictions)
-accuracy = np.mean(predictions==y_numpy)
-print(accuracy)
+#accuracy = np.mean(predictions==y_numpy)
+#print(accuracy)
 
 # Task 4: Implement CTS-NEO/SRS loss
+
+def k_mtrx(x):
+    xx = torch.mm(x,x.t())
+    # Remove diagonal because they are same.
+    return torch.where(
+        torch.eye(len(x)).to(x.device) == 1,
+        torch.tensor(-float("inf")).to(x.device),
+        xx
+        )
+
+# Expected output
+#print(k_mtrx(TanHnorm(F1(x,W0,W1)).float()))
+
+k_min, k_max = -1., 1.
+k_ideal = torch.zeros(N,N)
+for i in range(0,N):
+    for j in range(0,N):
+        if (y[i].item() != y[j].item()):
+            k_ideal[i,j] = k_max
+        else:
+            k_ideal[i,j] = k_min
+
+#print(k_ideal[:10,:10])
+
+def CTS_NEO(x):
+    xx=k_mtrx(x)
+    return torch.mean(torch.exp(xx[k_ideal == k_min]))
+
+#print(CTS_NEO(TanHnorm(F1(x,W0,W1)).float()))
+
+#  **** Task 5: Demonstrate end-to-end cross entropy loss training for full two-layer pipeline
+
+optimizer = torch.optim.Adam([W0u,W1u,W2u],lr=1e-3)
+
+# %%
+Rmax = 10
+Rb = 1
+lnew = float("inf")
+
+for i in range(Rmax):
+    loss = CrossEntropyLoss(F2(x,W0,W1,W2),y_numpy)
+    if (i % Rb) == 0:
+        lold = lnew
+        lnew = loss.item()
+        new_repr = TanHnorm(F1(x,W0,W1))
+        plt.scatter(new_repr[:,0],new_repr[:,1],c=y_numpy)
+        plt.title(f"e2e repr., epoch {i}")
+        plt.show()
+        
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+
+
+
 
 
 
