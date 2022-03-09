@@ -16,12 +16,13 @@ Task 6: Demonstrate layer-wise training of split pipeline
 """
 
 # Create Data
-import numpy as np
+from locale import normalize
 import os
 import random
 import torch
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 # Make deterministic
 seed = 123
 random.seed(seed)
@@ -90,7 +91,7 @@ def ReLU(x):
 def F1(x,W0,W1):
     return torch.mm(ReLU(np.dot(x,W0)),W1)
 
-print(F1(x,W0,W1).size())
+#print(F1(x,W0,W1).size())
 
 # ******* Taks2: Split into two separate layers according to the paper *******
 # Subtask: Create the output module
@@ -116,10 +117,39 @@ new_repr = TanHnorm(F1(x,W0,W1))
 
 def F2(x,W0,W1,W2):
     return torch.mm(new_repr,W2)
-print(F2(x,W0,W1,W2).size())
 
+
+#print(Output.size())
+
+
+#exp_output = torch.exp(Output - M)
+#print(Output)
 
 
 # ******** Task 3: Implement cross entropy loss ***********
+def SoftMaxActivation(Output):
+    Output = Output.numpy()
+    exp_output = np.exp(Output-np.max(Output, axis=1, keepdims=True))
+    probability = exp_output/ np.sum(exp_output, axis=1, keepdims= True)
+    return probability
+    
+def CrossEntropyLoss(Output,y_numpy):
+    Output = SoftMaxActivation(Output)
+    Output = np.clip(Output, 1e-7, 1-1e-7)
+    Samples = len(Output) 
+    correct_confidences = Output[range(Samples),y_numpy]
+    neg_log_likelihoods = -np.log(correct_confidences)
 
-# %%
+    return Output,neg_log_likelihoods
+
+Output, neg_log_likelihoods = CrossEntropyLoss(F2(x,W0,W1,W2),y_numpy)
+predictions = np.argmax(Output,axis=1)
+#print(predictions)
+accuracy = np.mean(predictions==y_numpy)
+print(accuracy)
+
+# Task 4: Implement CTS-NEO/SRS loss
+
+
+
+
