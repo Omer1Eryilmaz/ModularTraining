@@ -20,4 +20,16 @@ class ADTuple:
 
         return b
 
+g = lambda w: sin(w)
 
+a1 = ADTuple(val = 0)
+a2 = ADTuple(val = 0.5)
+
+result1 = g(a1)
+result2 = g(a2)
+
+print('function value at' + str(0) + '=' + str(result1.val))
+print('derivative value at' + str(0) + '=' + str(result1.der))
+
+print('function value at' + str(0.5) + '=' + str(result2.val))
+print('derivative value at' + str(0.5) + '=' + str(result2.der))
