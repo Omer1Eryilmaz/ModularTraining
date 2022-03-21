@@ -24,7 +24,8 @@ class Layer_Dense:
     def backward(self, dvalues):
         # Gradients on parameters
         self.dweights = np.dot(self.inputs.T, dvalues)
-        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        # Biases for all samples of each features.
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True) #axis = 0 sums column values
         # Gradient on values
         self.dinputs = np.dot(dvalues, self.weights.T)
 
@@ -47,7 +48,6 @@ class Activation_ReLU:
 
         # Zero gradient where input values were negative
         self.dinputs[self.inputs <= 0] = 0
-
 
 
 # Softmax activation
