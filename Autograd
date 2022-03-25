@@ -1,3 +1,2 @@
 This section includes automatic differantiation examples adapted from CS231n lecture (https://cs231n.github.io/optimization-2/#mat).
-
-
+OneNodeWithSigmoid.py
