@@ -1,5 +1,8 @@
 import numpy as np
 from sympy import arg
+import math
+import matplotlib.pyplot as plt
+
 # The basic building block of an AD calculator: the input variable w
 
 class ADTuple:
@@ -13,23 +16,26 @@ class ADTuple:
         if 'deriv' in kwargs:
             self.deriv = kwargs['deriv']
     
-    def sin(a): # When we do not put self as input a.deriv is recognized why?
-        b = ADTuple()
-        b.value = np.sin(a)
-        b.deriv = np.cos(a)*a.deriv
-
-        return b
+def sin(a): # When we do not put self as input a.deriv is recognized why?
+    b = ADTuple()
+    b.value = np.sin(a.value)
+    b.deriv = np.cos(a.value)*a.deriv
+    return b
 
 g = lambda w: sin(w)
 
-a1 = ADTuple(val = 0)
-a2 = ADTuple(val = 0.5)
+a1 = ADTuple(value = 0)
+a2 = ADTuple(value = 0.5)
 
 result1 = g(a1)
 result2 = g(a2)
 
-print('function value at' + str(0) + '=' + str(result1.val))
-print('derivative value at' + str(0) + '=' + str(result1.der))
+print('function value at' + str(0) + '=' + str(result1.value))
+print('derivative value at' + str(0) + '=' + str(result1.deriv))
 
-print('function value at' + str(0.5) + '=' + str(result2.val))
-print('derivative value at' + str(0.5) + '=' + str(result2.der))
+print('function value at' + str(0.5) + '=' + str(result2.value))
+print('derivative value at' + str(0.5) + '=' + str(result2.deriv))
+
+w = np.linspace(-10,10,1000)
+
+print(sin(w))
